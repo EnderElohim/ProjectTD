@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class scrGridManager : MonoBehaviour
 {
+    public GameObject testObject;
+    public Material[] testMaterials;
     public Vector2Int gridDimension;
     public int cellSize;
 
@@ -13,6 +15,33 @@ public class scrGridManager : MonoBehaviour
     private void Start()
     {
         pathfinding = new scrPathfinding(gridDimension, cellSize, Vector3.zero);
+        Vector2Int _enemyPosOne = new Vector2Int(scrPathfinding.manager.dimension.x / 2 + 1, scrPathfinding.manager.dimension.y - 1);
+
+        scrGameData.endPointNodeCord = new Vector2Int(scrPathfinding.manager.dimension.x / 2 + 1, scrPathfinding.manager.dimension.y / 2 + 1);
+        scrGameData.enemySpawnPositions = new Dictionary<Vector2Int, Vector3>();
+        scrGameData.enemySpawnPositions.Add(_enemyPosOne, pathfinding.GetNode(_enemyPosOne).GetCalculatedWorldPositionFromNodePosition());
+        pathfinding.GetNode(_enemyPosOne).SetBuildable(false);
+        scrGameData.InitNavData();
+
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                var _targetNode = scrPathfinding.manager.GetGrid().GetGridObject(scrGameData.endPointNodeCord + new Vector2Int(x,y));
+                _targetNode.SetBuildable(false);
+            }
+        }
+
+        var obstacleNodes = pathfinding.GetGeneratedObstacleNodes(0.4f, scrGameData.GetNavigationData());
+
+        if (obstacleNodes == null) return;
+
+        foreach (scrPathNode item in obstacleNodes)
+        {
+            GameObject _go = Instantiate(testObject);
+            _go.GetComponent<Renderer>().material = testMaterials[Random.Range(0, testMaterials.Length)];
+            _go.transform.position = item.GetCalculatedWorldPositionFromNodePosition();
+        }
 
     }
 
@@ -54,12 +83,12 @@ public class scrGridManager : MonoBehaviour
                 for (int y = 0; y < _dimension.y; y++)
                 {
                     if (x == 0 && y == 0) continue;
-                    if (_node.nodePosition.x + x >= gridDimension.x || _node.nodePosition.y + y >= gridDimension.y)
+                    if (_node.GetNodePosition().x + x >= gridDimension.x || _node.GetNodePosition().y + y >= gridDimension.y)
                     {
                         return false;
                     }
 
-                    scrPathNode _controlNode = pathfinding.GetNode(_node.nodePosition + new Vector2Int(x, y));
+                    scrPathNode _controlNode = pathfinding.GetNode(_node.GetNodePosition() + new Vector2Int(x, y));
 
                     if (_controlNode.IsWalkable() == false)
                     {
@@ -82,7 +111,7 @@ public class scrGridManager : MonoBehaviour
             _node.SetWalkable(false);
             _node.SetBuildingId(_buildingId);
 
-            _pos = (new Vector3(_node.nodePosition.x, _node.nodePosition.y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
+            _pos = (new Vector3(_node.GetNodePosition().x, 0,_node.GetNodePosition().y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
             return true;
         }
 
@@ -106,12 +135,12 @@ public class scrGridManager : MonoBehaviour
                 for (int y = 0; y < _dimension.y; y++)
                 {
                     if (x == 0 && y == 0) continue;
-                    if (_node.nodePosition.x + x >= gridDimension.x || _node.nodePosition.y + y >= gridDimension.y)
+                    if (_node.GetNodePosition().x + x >= gridDimension.x || _node.GetNodePosition().y + y >= gridDimension.y)
                     {
                         return false;
                     }
 
-                    scrPathNode _controlNode = pathfinding.GetNode(_node.nodePosition + new Vector2Int(x, y));
+                    scrPathNode _controlNode = pathfinding.GetNode(_node.GetNodePosition() + new Vector2Int(x, y));
 
                     if (_controlNode.IsWalkable() == false)
                     {
@@ -134,7 +163,7 @@ public class scrGridManager : MonoBehaviour
             _node.SetWalkable(false);
             _node.SetBuildingId(_buildingId);
 
-            _pos = (new Vector3(_node.nodePosition.x, _node.nodePosition.y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
+            _pos = (new Vector3(_node.GetNodePosition().x, _node.GetNodePosition().y) * pathfinding.GetGrid().GetCellSize() + Vector3.one * pathfinding.GetGrid().GetCellSize() * .5f);
             return true;
         }
 
