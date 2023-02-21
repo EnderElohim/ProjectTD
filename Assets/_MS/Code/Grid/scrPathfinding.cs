@@ -309,7 +309,7 @@ public class scrPathfinding
         scrGrid<scrPathNode> grid = scrPathfinding.manager.GetGrid();
         float cellSize = grid.GetCellSize();
         float noiseScale = 0.1f;
-        scrPathNode lastPlacedNode;
+        float testMax = 0; float textMin = Mathf.Infinity;
         for (int x = 0; x < grid.GetWidth(); x++)
         {
             for (int y = 0; y < grid.GetHeight(); y++)
@@ -336,9 +336,14 @@ public class scrPathfinding
                 }
 
                 Vector2 nodePos = new Vector2(x, y);
+                //noiseScale = Random.Range(0.4f, 0.7f);
                 float noiseValue = Mathf.PerlinNoise(nodePos.x * noiseScale, nodePos.y * noiseScale);
+                float centerBias = Mathf.Clamp(Vector2Int.Distance(new Vector2Int(x, y), new Vector2Int(grid.GetWidth() / 2, grid.GetHeight() / 2)), 0, 1 * grid.GetCellSize()) / 10;
 
-                if (noiseValue < obstacleDensity)
+                if (testMax < centerBias) testMax = centerBias;
+                if (textMin > centerBias) textMin = centerBias;
+
+                if (noiseValue - centerBias + Random.Range(0.4f,0.55f)< obstacleDensity)
                 {
                     obstacleNodes.Add(node);
                 }
@@ -349,7 +354,7 @@ public class scrPathfinding
                 }
             }
         }
-
+        Debug.Log("min: " + textMin + " max: " + testMax);
         return obstacleNodes;
     }
 
@@ -363,5 +368,10 @@ public class scrPathfinding
         return false;
     }
 
+    private float CalculateFalloff(float distance, float maxDistance)
+    {
+        float falloff = distance / maxDistance;
+        return falloff * falloff;
+    }
 
 }

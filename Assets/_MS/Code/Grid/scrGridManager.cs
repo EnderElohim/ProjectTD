@@ -32,7 +32,7 @@ public class scrGridManager : MonoBehaviour
             }
         }
 
-        var obstacleNodes = pathfinding.GetGeneratedObstacleNodes(0.4f, scrGameData.GetNavigationData());
+        var obstacleNodes = pathfinding.GetGeneratedObstacleNodes(0.35f, scrGameData.GetNavigationData());
 
         if (obstacleNodes == null) return;
 
